@@ -42,16 +42,16 @@ app.get('/Initialize', (req, res) => __awaiter(void 0, void 0, void 0, function*
 app.get('/WaitQr', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const client = yield (0, WhatsApp_1.GetClientOrInitialize)();
     const output = yield Promise.race([WhatsApp_1.readyPromise]);
-    return res.status(200).send('ready');
+    return res.status(200).send(output);
 }));
 app.post('/SendMessage', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const client = yield (0, WhatsApp_1.GetClientOrInitialize)();
     const output = yield Promise.race([WhatsApp_1.readyPromise]);
     const requestBody = req.body;
     yield client.sendMessage(requestBody.PhoneNumber, requestBody.Message).then((response) => {
-        res.status(200).send("Success");
+        res.status(200).send({ body: requestBody, status: "Success" });
     }).catch(err => {
-        res.status(400).send("Error when sending message");
+        res.status(400).send({ status: "Error" });
     });
 }));
 httpsServer.listen(port, '0.0.0.0', () => {

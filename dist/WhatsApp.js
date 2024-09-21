@@ -62,25 +62,25 @@ const GetClientOrInitialize = () => __awaiter(void 0, void 0, void 0, function* 
         client.on("ready", () => {
             console.log("Client is ready");
             if (resolveReady) {
-                resolveReady("ready"); // Resolve the promise when the client is ready
+                resolveReady({ result: "ready" }); // Resolve the promise when the client is ready
             }
         });
         client.on("message", (message) => {
             console.log("Message received:", message.body);
             if (resolveMessage) {
-                resolveMessage(`Message received: ${message.body}`);
+                resolveMessage({ message: message.body, status: 'received' });
             }
         });
         client.on("qr", (qr) => {
             console.log("QR Code received:", qr);
             if (resolveQr) {
-                resolveQr({ message: "QR Code received", data: qr });
+                resolveQr({ result: "QR Code received", data: qr });
             }
         });
         client.on("remote_session_saved", () => {
             console.log("Remote session saved");
             if (resolve_remote_session) {
-                resolve_remote_session("remote_session_saved");
+                resolve_remote_session({ message: "Remote session saved", status: 'received' });
             }
         });
         yield client.initialize();
