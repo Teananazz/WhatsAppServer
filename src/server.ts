@@ -63,5 +63,5 @@ app.post('/SendMessage', async (req: Request, res: Response) => {
 
 
 httpsServer.listen(port, '0.0.0.0',() => {
-  console.log(`[server]: Server is running at https://localhost:${port}`);
+  console.log(`[server]: Server is running at ${process.env.IP_ADDRESS}`);
 });
