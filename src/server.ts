@@ -44,7 +44,7 @@ app.get('/Initialize', async (req: Request, res: Response) => {
 app.get('/WaitQr', async (req: Request, res: Response) => {
    const client = await GetClientOrInitialize()
    const output = await Promise.race([readyPromise])
-   return res.status(200).send('ready')
+   return res.status(200).send(output)
 })
 
 app.post('/SendMessage', async (req: Request, res: Response) => {
@@ -53,9 +53,9 @@ app.post('/SendMessage', async (req: Request, res: Response) => {
    const requestBody:{PhoneNumber:string, Message:string} = req.body;
    await client.sendMessage(requestBody.PhoneNumber,requestBody.Message).then((response)=>{
   
-        res.status(200).send("Success")
+        res.status(200).send(output)
     }).catch(err => {
-        res.status(400).send("Error when sending message")
+        res.status(400).send({status:"Error"})
     });
 
 })
