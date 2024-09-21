@@ -53,7 +53,7 @@ app.post('/SendMessage', async (req: Request, res: Response) => {
    const requestBody:{PhoneNumber:string, Message:string} = req.body;
    await client.sendMessage(requestBody.PhoneNumber,requestBody.Message).then((response)=>{
   
-        res.status(200).send(output)
+        res.status(200).send({body:requestBody,status:"Success"})
     }).catch(err => {
         res.status(400).send({status:"Error"})
     });
