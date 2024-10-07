@@ -143,10 +143,9 @@ app.post(
    
   }
 
-
     // Access the uploaded file from req.file
     const uploadedFile = req.file;
-    if (uploadedFile && !requestBody.PatternID) {
+    if (uploadedFile ) {
        
        let fileBuffer = undefined;
       // Create a buffer from the uploaded file
