@@ -200,6 +200,39 @@ app.post("/SavePatternFile/:id",MemoryWithStoring.single("file"), async (req: Re
  
 });
 
+app.delete('/DeletePatternFile/:PatternID', (req, res) => {
+    const { PatternID } = req.params; // Step 1: Extract PatternID from the request parameters
+
+     const directoryPath = path.join(__dirname, 'uploads'); // Directory where the files are stored
+         // Read all files in the directory
+    const files = fs.readdirSync(directoryPath);
+    const found_file = files.find((val)=>val.startsWith(`file-${PatternID}`))
+    if(found_file) {
+         
+      const filePath = path.join(directoryPath, found_file); // Full path to the file
+      // Step 3: Check if the file exists
+    fs.access(filePath, fs.constants.F_OK, (err) => {
+        if (err) {
+            // File doesn't exist
+            return res.status(200).send('File not found');
+        }
+
+        // Step 4: Delete the file
+        fs.unlink(filePath, (err) => {
+            if (err) {
+                return res.status(500).send('Error deleting file');
+            }
+
+            // Step 5: Send success response
+            res.status(200).send('File deleted successfully');
+        });
+    });
+    }
+
+    
+});
+
+
 
 
 httpsServer.listen(port, "0.0.0.0", () => {
