@@ -6,6 +6,7 @@ import cors from "cors";
 import https from "https";
 import fs from "fs";
 import { Client, MessageMedia } from "whatsapp-web.js";
+
 import {
   GetClientOrInitialize,
   QrPromise,
@@ -14,6 +15,9 @@ import {
   MessagePromise,
 } from "./WhatsApp";
 import multer from "multer";
+import path from "path";
+import mime from "mime";
+import chardet from 'chardet';
 dotenv.config();
 
 const app: Express = express();
@@ -31,11 +35,60 @@ app.use(express.json());
 // CORS middleware
 app.use(cors());
 
+
+
+
+// Define the directory where uploaded files will be stored
+const uploadDirectory = path.join(__dirname, 'uploads');
+
+// Ensure that the directory exists
+if (!fs.existsSync(uploadDirectory)) {
+  fs.mkdirSync(uploadDirectory);
+}
+
 // Set up multer storage (optional customization of storage)
-const storage = multer.memoryStorage(); // Or you can use diskStorage if saving files to disk
+const memoryStorage = multer.memoryStorage(); // Or you can use diskStorage if saving files to disk
+
+// Multer disk storage for saving files to the 'uploads' directory
+const diskStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDirectory);
+  },
+  filename: (req, file, cb) => {
+     // patternID for the request
+    const PatternID = req.params.id;
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    cb(null, file.fieldname + '-' + PatternID + path.extname(file.originalname));
+  }
+});
+
+
+
+
 
 // Initialize multer
-const upload = multer({ storage });
+const MemoryWithNoStoring = multer({ storage:memoryStorage });
+
+const MemoryWithStoring = multer({ storage:diskStorage });
+
+
+const createMulterFileObject = (filePath:string) => {
+  const stats = fs.statSync(filePath); // Get file stats
+  const buffer = fs.readFileSync(filePath)
+  return {
+    fieldname: 'file',
+    originalname: path.basename(filePath),
+    encoding: chardet.detect(buffer),
+    mimetype: mime.lookup(filePath), // You might want to set this based on the actual file type
+    buffer: buffer, // Read the file as a buffer
+    size: stats.size,
+    destination: path.dirname(filePath),
+    filename: path.basename(filePath),
+    path: filePath,
+    // Other properties can be set here if needed
+  };
+};
+
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Response");
@@ -54,7 +107,7 @@ app.get("/WaitQr", async (req: Request, res: Response) => {
 
 app.post(
   "/SendMessage",
-  upload.single("file"),
+  MemoryWithNoStoring.single("file"),
   async (req: Request, res: Response) => {
     const client: Client = await GetClientOrInitialize();
     const output = await Promise.race([readyPromise]);
@@ -62,14 +115,40 @@ app.post(
       PhoneNumber: string;
       Message_1: string | undefined;
       Message_2: string | undefined;
-      file: FormData | undefined;
+      PatternID:string|undefined
     } = req.body;
+    let promises = [];
+     // check if file does not exist and you get a patternID
+    if(requestBody.PatternID && !req.file) {
+     const directoryPath = path.join(__dirname, 'uploads'); // Directory where the files are stored
+         // Read all files in the directory
+    const files = fs.readdirSync(directoryPath);
+    const found_file = files.find((val)=>val.startsWith(`file-${requestBody.PatternID}`))
+    if(found_file) {
+          const filePath = path.join(directoryPath, found_file); // Full path to the file
+           const multerFile = await createMulterFileObject(filePath);
+            // Prepare the media data for WhatsApp
+        const mimetype = multerFile.mimetype;
+        const filename = multerFile.originalname;
+        const filesize = multerFile.size; // Size in bytes
+        const data = multerFile.buffer.toString("base64"); // Convert buffer to base64 string
+        // Create an instance of MessageMedia
+      const media = new MessageMedia(mimetype, data, filename, filesize);
+      if (media) {
+        let media_promise = client.sendMessage(requestBody.PhoneNumber, media);
+        promises.push(media_promise);
+      }
+
+     }
+   
+  }
+
+
     // Access the uploaded file from req.file
     const uploadedFile = req.file;
-    let fileBuffer = undefined;
-    let media = undefined;
-    let promises = [];
-    if (uploadedFile) {
+    if (uploadedFile && !requestBody.PatternID) {
+       
+       let fileBuffer = undefined;
       // Create a buffer from the uploaded file
       fileBuffer = Buffer.from(uploadedFile.buffer);
 
@@ -112,6 +191,17 @@ app.post(
            })
   }
 );
+app.post("/SavePatternFile/:id",MemoryWithStoring.single("file"), async (req: Request, res: Response) => {
+      const requestBody: {
+      PatternID:string
+    } = req.body;
+     // Your logic to handle saving the file goes here
+  // For example, you could send a success response:
+  res.status(200).send({ message: `File saved successfully with ID: ${requestBody.PatternID}` });
+ 
+});
+
+
 
 httpsServer.listen(port, "0.0.0.0", () => {
   console.log(
