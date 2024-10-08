@@ -44,3 +44,4 @@ WhatsappData
 
 # files
 src/uploads/*
+dist/uploads/*
