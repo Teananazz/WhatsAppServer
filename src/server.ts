@@ -79,13 +79,12 @@ const createMulterFileObject = (filePath:string) => {
     fieldname: 'file',
     originalname: path.basename(filePath),
     encoding: chardet.detect(buffer),
-    mimetype: mime.lookup(filePath), // You might want to set this based on the actual file type
+    mimetype: mime.lookup(filePath),
     buffer: buffer, // Read the file as a buffer
     size: stats.size,
     destination: path.dirname(filePath),
     filename: path.basename(filePath),
     path: filePath,
-    // Other properties can be set here if needed
   };
 };
 
@@ -194,18 +193,18 @@ app.post("/SavePatternFile/:id",MemoryWithStoring.single("file"), async (req: Re
       const requestBody: {
       PatternID:string
     } = req.body;
-     // Your logic to handle saving the file goes here
-  // For example, you could send a success response:
+
   res.status(200).send({ message: `File saved successfully with ID: ${requestBody.PatternID}` });
  
 });
 
 app.delete('/DeletePatternFile/:PatternID', (req, res) => {
     const { PatternID } = req.params; // Step 1: Extract PatternID from the request parameters
-
-     const directoryPath = path.join(__dirname, 'uploads'); // Directory where the files are stored
+     // Directory where the files are stored
+     const directoryPath = path.join(__dirname, 'uploads'); 
          // Read all files in the directory
     const files = fs.readdirSync(directoryPath);
+
     const found_file = files.find((val)=>val.startsWith(`file-${PatternID}`))
     if(found_file) {
          
