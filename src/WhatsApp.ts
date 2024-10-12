@@ -25,14 +25,10 @@ const GetClientOrInitialize = async () => {
     }),
       webVersion: "2.3000.1015910634-alpha", 
       webVersionCache: {
-        // the html is inside the github. The reason i use this instead of meta directory - making sure that it will not stop working later on.
-       // TODO: Remember to update this each time.
         remotePath:
           "https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.3000.1015910634-alpha.html",
         type: "remote",
       },
-       // this will only on the platform (since the platform is using linux). In windows this won't work.
-    //  mode:'serverless'
     });
 
 

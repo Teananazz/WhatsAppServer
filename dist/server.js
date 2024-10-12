@@ -66,13 +66,12 @@ const createMulterFileObject = (filePath) => {
         fieldname: 'file',
         originalname: path_1.default.basename(filePath),
         encoding: chardet_1.default.detect(buffer),
-        mimetype: mime_1.default.lookup(filePath), // You might want to set this based on the actual file type
+        mimetype: mime_1.default.lookup(filePath),
         buffer: buffer, // Read the file as a buffer
         size: stats.size,
         destination: path_1.default.dirname(filePath),
         filename: path_1.default.basename(filePath),
         path: filePath,
-        // Other properties can be set here if needed
     };
 };
 app.get("/", (req, res) => {
@@ -151,13 +150,12 @@ app.post("/SendMessage", MemoryWithNoStoring.single("file"), (req, res) => __awa
 }));
 app.post("/SavePatternFile/:id", MemoryWithStoring.single("file"), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const requestBody = req.body;
-    // Your logic to handle saving the file goes here
-    // For example, you could send a success response:
     res.status(200).send({ message: `File saved successfully with ID: ${requestBody.PatternID}` });
 }));
 app.delete('/DeletePatternFile/:PatternID', (req, res) => {
     const { PatternID } = req.params; // Step 1: Extract PatternID from the request parameters
-    const directoryPath = path_1.default.join(__dirname, 'uploads'); // Directory where the files are stored
+    // Directory where the files are stored
+    const directoryPath = path_1.default.join(__dirname, 'uploads');
     // Read all files in the directory
     const files = fs_1.default.readdirSync(directoryPath);
     const found_file = files.find((val) => val.startsWith(`file-${PatternID}`));
