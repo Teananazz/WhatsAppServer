@@ -46,8 +46,8 @@ if (!fs.existsSync(uploadDirectory)) {
   fs.mkdirSync(uploadDirectory);
 }
 
-// Set up multer storage (optional customization of storage)
-const memoryStorage = multer.memoryStorage(); // Or you can use diskStorage if saving files to disk
+
+const memoryStorage = multer.memoryStorage(); 
 
 // Multer disk storage for saving files to the 'uploads' directory
 const diskStorage = multer.diskStorage({
@@ -73,7 +73,7 @@ const MemoryWithStoring = multer({ storage:diskStorage });
 
 
 const createMulterFileObject = (filePath:string) => {
-  const stats = fs.statSync(filePath); // Get file stats
+  const stats = fs.statSync(filePath); 
   const buffer = fs.readFileSync(filePath)
   return {
     fieldname: 'file',
