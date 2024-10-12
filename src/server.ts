@@ -17,7 +17,7 @@ import {
 import multer from "multer";
 import path from "path";
 import mime from "mime";
-import chardet from 'chardet';
+import chardet from "chardet";
 dotenv.config();
 
 const app: Express = express();
@@ -35,19 +35,15 @@ app.use(express.json());
 // CORS middleware
 app.use(cors());
 
-
-
-
 // Define the directory where uploaded files will be stored
-const uploadDirectory = path.join(__dirname, 'uploads');
+const uploadDirectory = path.join(__dirname, "uploads");
 
 // Ensure that the directory exists
 if (!fs.existsSync(uploadDirectory)) {
   fs.mkdirSync(uploadDirectory);
 }
 
-
-const memoryStorage = multer.memoryStorage(); 
+const memoryStorage = multer.memoryStorage();
 
 // Multer disk storage for saving files to the 'uploads' directory
 const diskStorage = multer.diskStorage({
@@ -55,28 +51,26 @@ const diskStorage = multer.diskStorage({
     cb(null, uploadDirectory);
   },
   filename: (req, file, cb) => {
-     // patternID for the request
+    // patternID for the request
     const PatternID = req.params.id;
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, file.fieldname + '-' + PatternID + path.extname(file.originalname));
-  }
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(
+      null,
+      file.fieldname + "-" + PatternID + path.extname(file.originalname)
+    );
+  },
 });
 
-
-
-
-
 // Initialize multer
-const MemoryWithNoStoring = multer({ storage:memoryStorage });
+const MemoryWithNoStoring = multer({ storage: memoryStorage });
 
-const MemoryWithStoring = multer({ storage:diskStorage });
+const MemoryWithStoring = multer({ storage: diskStorage });
 
-
-const createMulterFileObject = (filePath:string) => {
-  const stats = fs.statSync(filePath); 
-  const buffer = fs.readFileSync(filePath)
+const createMulterFileObject = (filePath: string) => {
+  const stats = fs.statSync(filePath);
+  const buffer = fs.readFileSync(filePath);
   return {
-    fieldname: 'file',
+    fieldname: "file",
     originalname: path.basename(filePath),
     encoding: chardet.detect(buffer),
     mimetype: mime.lookup(filePath),
@@ -87,7 +81,6 @@ const createMulterFileObject = (filePath:string) => {
     path: filePath,
   };
 };
-
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Response");
@@ -114,39 +107,41 @@ app.post(
       PhoneNumber: string;
       Message_1: string | undefined;
       Message_2: string | undefined;
-      PatternID:string|undefined
+      PatternID: string | undefined;
     } = req.body;
     let promises = [];
-     // check if file does not exist and you get a patternID
-    if(requestBody.PatternID && !req.file) {
-     const directoryPath = path.join(__dirname, 'uploads'); // Directory where the files are stored
-         // Read all files in the directory
-    const files = fs.readdirSync(directoryPath);
-    const found_file = files.find((val)=>val.startsWith(`file-${requestBody.PatternID}`))
-    if(found_file) {
-          const filePath = path.join(directoryPath, found_file); // Full path to the file
-           const multerFile = await createMulterFileObject(filePath);
-            // Prepare the media data for WhatsApp
+    // check if file does not exist and you get a patternID
+    if (requestBody.PatternID && !req.file) {
+      const directoryPath = path.join(__dirname, "uploads"); // Directory where the files are stored
+      // Read all files in the directory
+      const files = fs.readdirSync(directoryPath);
+      const found_file = files.find((val) =>
+        val.startsWith(`file-${requestBody.PatternID}`)
+      );
+      if (found_file) {
+        const filePath = path.join(directoryPath, found_file); // Full path to the file
+        const multerFile = await createMulterFileObject(filePath);
+        // Prepare the media data for WhatsApp
         const mimetype = multerFile.mimetype;
         const filename = multerFile.originalname;
         const filesize = multerFile.size; // Size in bytes
         const data = multerFile.buffer.toString("base64"); // Convert buffer to base64 string
         // Create an instance of MessageMedia
-      const media = new MessageMedia(mimetype, data, filename, filesize);
-      if (media) {
-        let media_promise = client.sendMessage(requestBody.PhoneNumber, media);
-        promises.push(media_promise);
+        const media = new MessageMedia(mimetype, data, filename, filesize);
+        if (media) {
+          let media_promise = client.sendMessage(
+            requestBody.PhoneNumber,
+            media
+          );
+          promises.push(media_promise);
+        }
       }
-
-     }
-   
-  }
+    }
 
     // Access the uploaded file from req.file
     const uploadedFile = req.file;
-    if (uploadedFile ) {
-       
-       let fileBuffer = undefined;
+    if (uploadedFile) {
+      let fileBuffer = undefined;
       // Create a buffer from the uploaded file
       fileBuffer = Buffer.from(uploadedFile.buffer);
 
@@ -180,59 +175,60 @@ app.post(
       );
       promises.push(message_promise);
     }
-    Promise.all([...promises]).then((responses)=> {
-          res.status(200).send({body:responses,status:"Success"})
- 
-     }).catch((err)=> {
-                res.status(400).send({status:"Error"})
-
-           })
+    Promise.all([...promises])
+      .then((responses) => {
+        res.status(200).send({ body: responses, status: "Success" });
+      })
+      .catch((err) => {
+        res.status(400).send({ status: "Error" });
+      });
   }
 );
-app.post("/SavePatternFile/:id",MemoryWithStoring.single("file"), async (req: Request, res: Response) => {
-      const requestBody: {
-      PatternID:string
+app.post(
+  "/SavePatternFile/:id",
+  MemoryWithStoring.single("file"),
+  async (req: Request, res: Response) => {
+    const requestBody: {
+      PatternID: string;
     } = req.body;
 
-  res.status(200).send({ message: `File saved successfully with ID: ${requestBody.PatternID}` });
- 
-});
+    res
+      .status(200)
+      .send({
+        message: `File saved successfully with ID: ${requestBody.PatternID}`,
+      });
+  }
+);
 
-app.delete('/DeletePatternFile/:PatternID', (req, res) => {
-    const { PatternID } = req.params; // Step 1: Extract PatternID from the request parameters
-     // Directory where the files are stored
-     const directoryPath = path.join(__dirname, 'uploads'); 
-         // Read all files in the directory
-    const files = fs.readdirSync(directoryPath);
+app.delete("/DeletePatternFile/:PatternID", (req, res) => {
+  const { PatternID } = req.params; // Step 1: Extract PatternID from the request parameters
+  // Directory where the files are stored
+  const directoryPath = path.join(__dirname, "uploads");
+  // Read all files in the directory
+  const files = fs.readdirSync(directoryPath);
 
-    const found_file = files.find((val)=>val.startsWith(`file-${PatternID}`))
-    if(found_file) {
-         
-      const filePath = path.join(directoryPath, found_file); // Full path to the file
-      // Step 3: Check if the file exists
+  const found_file = files.find((val) => val.startsWith(`file-${PatternID}`));
+  if (found_file) {
+    const filePath = path.join(directoryPath, found_file); // Full path to the file
+    // Step 3: Check if the file exists
     fs.access(filePath, fs.constants.F_OK, (err) => {
+      if (err) {
+        // File doesn't exist
+        return res.status(200).send("File not found");
+      }
+
+      // Step 4: Delete the file
+      fs.unlink(filePath, (err) => {
         if (err) {
-            // File doesn't exist
-            return res.status(200).send('File not found');
+          return res.status(500).send("Error deleting file");
         }
 
-        // Step 4: Delete the file
-        fs.unlink(filePath, (err) => {
-            if (err) {
-                return res.status(500).send('Error deleting file');
-            }
-
-            // Step 5: Send success response
-            res.status(200).send('File deleted successfully');
-        });
+        // Step 5: Send success response
+        res.status(200).send("File deleted successfully");
+      });
     });
-    }
-
-    
+  }
 });
-
-
-
 
 httpsServer.listen(port, "0.0.0.0", () => {
   console.log(
