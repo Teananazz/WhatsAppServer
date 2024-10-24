@@ -29,7 +29,7 @@ app.use(express.json());
 // CORS middleware
 app.use(cors());
 
-app.options('*', cors());
+
 // Define the directory where uploaded files will be stored
 const uploadDirectory = path.join(__dirname, "uploads");
 
