@@ -2,6 +2,10 @@
   "name": "server",
   "version": "1.0.0",
   "main": "dist/server.js",
+     "engines" : { 
+    "npm":">=10.8.0",
+    "node" : ">=22.0.0"
+  },
   "dependencies": {
     "chardet": "^2.0.0",
     "cors": "^2.8.5",
