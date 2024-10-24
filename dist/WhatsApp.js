@@ -28,8 +28,8 @@ const GetClientOrInitialize = () => __awaiter(void 0, void 0, void 0, function* 
     else {
         var client = new whatsapp_web_js_1.Client({
             authStrategy: new whatsapp_web_js_1.LocalAuth({
-                dataPath: 'WhatsAppData',
-                clientId: '1'
+                dataPath: "WhatsAppData",
+                clientId: "1",
             }),
             webVersion: "2.3000.1015910634-alpha",
             webVersionCache: {
@@ -64,7 +64,7 @@ const GetClientOrInitialize = () => __awaiter(void 0, void 0, void 0, function* 
         client.on("message", (message) => {
             console.log("Message received:", message.body);
             if (resolveMessage) {
-                resolveMessage({ message: message.body, status: 'received' });
+                resolveMessage({ message: message.body, status: "received" });
             }
         });
         client.on("qr", (qr) => {
@@ -76,7 +76,10 @@ const GetClientOrInitialize = () => __awaiter(void 0, void 0, void 0, function* 
         client.on("remote_session_saved", () => {
             console.log("Remote session saved");
             if (resolve_remote_session) {
-                resolve_remote_session({ message: "Remote session saved", status: 'received' });
+                resolve_remote_session({
+                    message: "Remote session saved",
+                    status: "received",
+                });
             }
         });
         yield client.initialize();

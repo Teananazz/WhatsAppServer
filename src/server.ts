@@ -23,12 +23,6 @@ dotenv.config();
 const app: Express = express();
 const port: number = process.env.PORT ? parseInt(process.env.PORT) : 3994;
 
-// Load the SSL certificate and key
-const privateKey = fs.readFileSync("keys/key.pem", "utf8");
-const certificate = fs.readFileSync("keys/cert.pem", "utf8");
-const credentials = { key: privateKey, cert: certificate };
-const httpsServer = https.createServer(credentials, app);
-
 // Middleware to parse JSON bodies
 app.use(express.json());
 
@@ -192,11 +186,9 @@ app.post(
       PatternID: string;
     } = req.body;
 
-    res
-      .status(200)
-      .send({
-        message: `File saved successfully with ID: ${requestBody.PatternID}`,
-      });
+    res.status(200).send({
+      message: `File saved successfully with ID: ${requestBody.PatternID}`,
+    });
   }
 );
 
@@ -230,8 +222,6 @@ app.delete("/DeletePatternFile/:PatternID", (req, res) => {
   }
 });
 
-httpsServer.listen(port, "0.0.0.0", () => {
-  console.log(
-    `[server]: Server is running at ${process.env.IP_ADDRESS}:${port}`
-  );
+app.listen(port, "0.0.0.0", () => {
+  console.log(`[server]: Server is running at Succesfully`);
 });
