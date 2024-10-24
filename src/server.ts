@@ -21,7 +21,7 @@ import chardet from "chardet";
 dotenv.config();
 
 const app: Express = express();
-const port: number = process.env.PORT ? parseInt(process.env.PORT) : 3994;
+const port: number = 10000
 
 // Middleware to parse JSON bodies
 app.use(express.json());
