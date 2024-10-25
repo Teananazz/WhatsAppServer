@@ -40,7 +40,6 @@ WhatsappData
 
 
 .vercel
-.env
 
 # files
 src/uploads/*
