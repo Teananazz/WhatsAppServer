@@ -37,7 +37,7 @@ app.use(express_1.default.json());
 // CORS middleware
 app.use((0, cors_1.default)());
 // Define the directory where uploaded files will be stored
-const uploadDirectory = path_1.default.join(__dirname, 'uploads');
+const uploadDirectory = path_1.default.join(__dirname, "uploads");
 // Ensure that the directory exists
 if (!fs_1.default.existsSync(uploadDirectory)) {
     fs_1.default.mkdirSync(uploadDirectory);
@@ -51,9 +51,9 @@ const diskStorage = multer_1.default.diskStorage({
     filename: (req, file, cb) => {
         // patternID for the request
         const PatternID = req.params.id;
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-        cb(null, file.fieldname + '-' + PatternID + path_1.default.extname(file.originalname));
-    }
+        const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+        cb(null, file.fieldname + "-" + PatternID + path_1.default.extname(file.originalname));
+    },
 });
 // Initialize multer
 const MemoryWithNoStoring = (0, multer_1.default)({ storage: memoryStorage });
@@ -62,7 +62,7 @@ const createMulterFileObject = (filePath) => {
     const stats = fs_1.default.statSync(filePath);
     const buffer = fs_1.default.readFileSync(filePath);
     return {
-        fieldname: 'file',
+        fieldname: "file",
         originalname: path_1.default.basename(filePath),
         encoding: chardet_1.default.detect(buffer),
         mimetype: mime_1.default.lookup(filePath),
@@ -93,7 +93,7 @@ app.post("/SendMessage", MemoryWithNoStoring.single("file"), (req, res) => __awa
     let promises = [];
     // check if file does not exist and you get a patternID
     if (requestBody.PatternID && !req.file) {
-        const directoryPath = path_1.default.join(__dirname, 'uploads'); // Directory where the files are stored
+        const directoryPath = path_1.default.join(__dirname, "uploads"); // Directory where the files are stored
         // Read all files in the directory
         const files = fs_1.default.readdirSync(directoryPath);
         const found_file = files.find((val) => val.startsWith(`file-${requestBody.PatternID}`));
@@ -141,20 +141,26 @@ app.post("/SendMessage", MemoryWithNoStoring.single("file"), (req, res) => __awa
         let message_promise = client.sendMessage(requestBody.PhoneNumber, textMessageBody);
         promises.push(message_promise);
     }
-    Promise.all([...promises]).then((responses) => {
+    Promise.all([...promises])
+        .then((responses) => {
         res.status(200).send({ body: responses, status: "Success" });
-    }).catch((err) => {
+    })
+        .catch((err) => {
         res.status(400).send({ status: "Error" });
     });
 }));
 app.post("/SavePatternFile/:id", MemoryWithStoring.single("file"), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const requestBody = req.body;
-    res.status(200).send({ message: `File saved successfully with ID: ${requestBody.PatternID}` });
+    res
+        .status(200)
+        .send({
+        message: `File saved successfully with ID: ${requestBody.PatternID}`,
+    });
 }));
-app.delete('/DeletePatternFile/:PatternID', (req, res) => {
+app.delete("/DeletePatternFile/:PatternID", (req, res) => {
     const { PatternID } = req.params; // Step 1: Extract PatternID from the request parameters
     // Directory where the files are stored
-    const directoryPath = path_1.default.join(__dirname, 'uploads');
+    const directoryPath = path_1.default.join(__dirname, "uploads");
     // Read all files in the directory
     const files = fs_1.default.readdirSync(directoryPath);
     const found_file = files.find((val) => val.startsWith(`file-${PatternID}`));
@@ -164,15 +170,15 @@ app.delete('/DeletePatternFile/:PatternID', (req, res) => {
         fs_1.default.access(filePath, fs_1.default.constants.F_OK, (err) => {
             if (err) {
                 // File doesn't exist
-                return res.status(200).send('File not found');
+                return res.status(200).send("File not found");
             }
             // Step 4: Delete the file
             fs_1.default.unlink(filePath, (err) => {
                 if (err) {
-                    return res.status(500).send('Error deleting file');
+                    return res.status(500).send("Error deleting file");
                 }
                 // Step 5: Send success response
-                res.status(200).send('File deleted successfully');
+                res.status(200).send("File deleted successfully");
             });
         });
     }
