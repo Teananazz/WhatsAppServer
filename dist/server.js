@@ -91,10 +91,15 @@ app.post("/SendMessage", MemoryWithNoStoring.single("file"), (req, res) => __awa
     const output = yield Promise.race([WhatsApp_1.readyPromise]);
     const requestBody = req.body;
     let promises = [];
-    // check if file does not exist and you get a patternID
+    if (requestBody.Message_1) {
+        const textMessageBody = requestBody.Message_1;
+        let message_promise = () => client.sendMessage(requestBody.PhoneNumber, textMessageBody);
+        promises.push(message_promise);
+    }
+    //check if file does not exist and you get a patternID
     if (requestBody.PatternID && !req.file) {
         const directoryPath = path_1.default.join(__dirname, "uploads"); // Directory where the files are stored
-        // Read all files in the directory
+        //Read all files in the directory
         const files = fs_1.default.readdirSync(directoryPath);
         const found_file = files.find((val) => val.startsWith(`file-${requestBody.PatternID}`));
         if (found_file) {
@@ -105,43 +110,42 @@ app.post("/SendMessage", MemoryWithNoStoring.single("file"), (req, res) => __awa
             const filename = multerFile.originalname;
             const filesize = multerFile.size; // Size in bytes
             const data = multerFile.buffer.toString("base64"); // Convert buffer to base64 string
-            // Create an instance of MessageMedia
+            //Create an instance of MessageMedia
             const media = new whatsapp_web_js_1.MessageMedia(mimetype, data, filename, filesize);
             if (media) {
-                let media_promise = client.sendMessage(requestBody.PhoneNumber, media);
+                let media_promise = () => client.sendMessage(requestBody.PhoneNumber, media);
                 promises.push(media_promise);
             }
         }
     }
-    // Access the uploaded file from req.file
-    const uploadedFile = req.file;
-    if (uploadedFile) {
+    else if (req.file) {
+        //Access the uploaded file from req.file
+        const uploadedFile = req.file;
         let fileBuffer = undefined;
-        // Create a buffer from the uploaded file
+        //Create a buffer from the uploaded file
         fileBuffer = Buffer.from(uploadedFile.buffer);
-        // Prepare the media data for WhatsApp
+        //Prepare the media data for WhatsApp
         const mimetype = uploadedFile.mimetype;
         const filename = uploadedFile.originalname;
         const filesize = uploadedFile.size; // Size in bytes
         const data = uploadedFile.buffer.toString("base64"); // Convert buffer to base64 string
-        // Create an instance of MessageMedia
+        //Create an instance of MessageMedia
         const media = new whatsapp_web_js_1.MessageMedia(mimetype, data, filename, filesize);
         if (media) {
-            let media_promise = client.sendMessage(requestBody.PhoneNumber, media);
+            let media_promise = () => client.sendMessage(requestBody.PhoneNumber, media);
             promises.push(media_promise);
         }
     }
-    if (requestBody.Message_1) {
-        const textMessageBody = requestBody.Message_1;
-        let message_promise = client.sendMessage(requestBody.PhoneNumber, textMessageBody);
-        promises.push(message_promise);
-    }
     if (requestBody.Message_2) {
         const textMessageBody = requestBody.Message_2;
-        let message_promise = client.sendMessage(requestBody.PhoneNumber, textMessageBody);
+        let message_promise = () => client.sendMessage(requestBody.PhoneNumber, textMessageBody);
         promises.push(message_promise);
     }
-    Promise.all([...promises])
+    var result = Promise.resolve();
+    promises.forEach((task) => {
+        result = result.then(() => task());
+    });
+    result
         .then((responses) => {
         res.status(200).send({ body: responses, status: "Success" });
     })
@@ -151,9 +155,7 @@ app.post("/SendMessage", MemoryWithNoStoring.single("file"), (req, res) => __awa
 }));
 app.post("/SavePatternFile/:id", MemoryWithStoring.single("file"), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const requestBody = req.body;
-    res
-        .status(200)
-        .send({
+    res.status(200).send({
         message: `File saved successfully with ID: ${requestBody.PatternID}`,
     });
 }));
