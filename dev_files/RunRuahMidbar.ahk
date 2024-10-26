@@ -17,12 +17,11 @@ Menu, Tray, Icon, %iconPath%  ; Use the iconPath variable to set the tray icon
 Menu, Tray, Add, Exit, ExitApp
 Menu, Tray, Default, Exit
 
+; Start the npm install and build process in a hidden command prompt
+Run, %ComSpec% /c cd /d "%nextJsPath%" && npm install && npm run build, , Hide, buildProcessId
 
-; Start the build process in a hidden command prompt
-Run, %ComSpec% /c cd /d "%nextJsPath%" && npm install && npm run build, , Hide
-
-; Wait for the build process to complete
-Sleep, 30000 ; Adjust this based on your build time
+; Wait for the entire process (npm install and npm run build) to complete
+Process, Wait, %buildProcessId%
 
 ; Check if the .next directory exists to confirm a successful build
 
