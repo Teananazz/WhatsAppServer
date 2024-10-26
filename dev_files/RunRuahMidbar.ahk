@@ -17,8 +17,9 @@ Menu, Tray, Icon, %iconPath%  ; Use the iconPath variable to set the tray icon
 Menu, Tray, Add, Exit, ExitApp
 Menu, Tray, Default, Exit
 
+
 ; Start the build process in a hidden command prompt
-Run, %ComSpec% /c cd /d "%nextJsPath%" && npm run build, , Hide
+Run, %ComSpec% /c cd /d "%nextJsPath%" && npm install && npm run build, , Hide
 
 ; Wait for the build process to complete
 Sleep, 30000 ; Adjust this based on your build time
