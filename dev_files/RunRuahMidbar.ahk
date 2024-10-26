@@ -36,8 +36,12 @@ ExitApp:
     ; Close the running Node.js process using the PID captured earlier
     if (processId) {
         Process, Close, %processId%
+		 Run, taskkill /IM node.exe /F, , Hide
     } else {
         ; If processId is not set, just ensure all node processes are closed
         Process, Close, node.exe ; Ensure that all node processes are closed
+		Run, taskkill /IM node.exe /F, , Hide
     }
+	  ; Optionally, check if it was successful
+
     ExitApp ; Terminate the script
