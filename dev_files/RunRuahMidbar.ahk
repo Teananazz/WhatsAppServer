@@ -18,10 +18,7 @@ Menu, Tray, Add, Exit, ExitApp
 Menu, Tray, Default, Exit
 
 ; Start the npm install and build process in a hidden command prompt
-Run, %ComSpec% /c cd /d "%nextJsPath%" && npm install && npm run build, , Hide, buildProcessId
-
-; Wait for the entire process (npm install and npm run build) to complete
-Process, Wait, %buildProcessId%
+RunWait, %ComSpec% /c cd /d "%nextJsPath%" && npm install && npm run build, , Hide
 
 ; Check if the .next directory exists to confirm a successful build
 
